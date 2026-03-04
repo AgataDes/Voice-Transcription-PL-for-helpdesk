@@ -1,0 +1,357 @@
+{
+  "name": "Voice Transcription (PL) for helpdesk",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        784,
+        2656
+      ],
+      "id": "129082a8-3e58-4548-91e1-d085411c6bf1",
+      "name": "Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vzj8IwnhprGOTV37",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Input & Transcription\nLoads the specified audio file from your local drive and sends it to the Whisper-large-v3 (Groq) model for near-instant speech-to-text transcription.",
+        "height": 496,
+        "width": 608,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        2272
+      ],
+      "typeVersion": 1,
+      "id": "b95f6ff2-8f42-4ef3-a8af-e8fef842430c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Logic & Analysis \nThe local Qwen 2.5 model analyzes the transcript. it identifies the shop number, device type, and generates a structured diagnostic summary in JSON.",
+        "height": 496,
+        "width": 352,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        2272
+      ],
+      "typeVersion": 1,
+      "id": "f9ecc13b-d965-4bf6-9085-0eabdbf13f44",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Parsing\nCleans the AI output by stripping away Markdown code blocks (```json) and converts the raw string into a valid JSON object. This ensures the data is perfectly formatted before being sent to the spreadsheet.",
+        "height": 496,
+        "width": 246,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        2272
+      ],
+      "typeVersion": 1,
+      "id": "de45cc0c-b827-462f-886d-dc953c19f97b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        2480
+      ],
+      "id": "c18d9f63-a15a-4611-a007-a97eff6e0898",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "filePath": "C:\\Users\\agadz\\.n8n-files\\[Agata Desecka]_7413-11696000085_20260216162458(10304).wav"
+      },
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        336,
+        2480
+      ],
+      "id": "2e24e80a-b4b2-44fd-84cd-d8eebc5452fc",
+      "name": "Local File Ingestion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        544,
+        2480
+      ],
+      "id": "2cf06ff7-fba3-47a5-959d-d3c65f9ee2f3",
+      "name": "Groq Whisper Transcription",
+      "credentials": {
+        "groqApi": {
+          "id": "AcPB5SRtZ1dvxDYa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Jesteś asystentem Agaty. Przetwórz transkrypcję na JSON.\n\nStruktura:\n{\n  \"nr_sklepu\": \"\",\n  \"urzadzenie\": \"\",\n  \"problem\": \"\",\n  \"status\": \"\",\n  \"notatka\": \"\"\n}\n\nTRANSKRYPCJA:\n{{ $json.text }}\n\nZwróć TYLKO czysty JSON.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        784,
+        2480
+      ],
+      "id": "59da89e8-c970-4afc-8bcb-5ced7928bbf9",
+      "name": "AI Diagnostic Engine"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.text;\n// Usuwamy znaczniki ```json i ``` jeśli AI je dodało\n//  (/.../g,\"kropki\") <-- g od Global - wyrażenie regularne - szukaj i zamień każde wyrażenie, bez tego usuwa tylko pierwsze wystąpienie\n// .trim() - funkcja, która usuwa wszystkie niepotrzebne spacje i entery z  początku i końca tekstu.\n\nconst cleanJson = rawText.replace(/```json|```/g, \"\").trim();\n\ntry {\n  const parsedData = JSON.parse(cleanJson);\n  return parsedData;\n} catch (e) {\n  // Jeśli AI coś zepsuło w formacie, zwróć błąd lub surowy tekst\n  return { error: \"Błąd parsowania\", raw: rawText };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        2480
+      ],
+      "id": "6f2c0f26-664d-4e37-b20d-34cda52fd4d4",
+      "name": "JSON Sanitizer & Parser"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZquPFCc0Gxekzcxr2j93ilGX2aek95F005vAuqfcD3c",
+          "mode": "list",
+          "cachedResultName": "Rejestr awarii",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZquPFCc0Gxekzcxr2j93ilGX2aek95F005vAuqfcD3c/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Arkusz1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nr sklepu": "={{ $json.nr_sklepu }}",
+            "Problem": "={{ $json.problem }}",
+            "Urządzenie": "={{ $json.urzadzenie }}",
+            "Status": "={{ $json.status }}",
+            "Notatka": "={{ $json.notatka }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nr sklepu",
+              "displayName": "Nr sklepu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urządzenie",
+              "displayName": "Urządzenie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Problem",
+              "displayName": "Problem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notatka",
+              "displayName": "Notatka",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        2480
+      ],
+      "id": "13ac8729-c742-4709-9553-5258ae9cbc79",
+      "name": "Google Sheets Exporter",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XxxZMRfHWuMOLNzH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Data Storage\nAutomatically appends the processed data into Google Sheets, maintaining an organized and searchable record of all technical incidents.",
+        "height": 496,
+        "width": 256,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        2272
+      ],
+      "typeVersion": 1,
+      "id": "790adfd4-281e-49f2-ba0f-f7f8eed1be4c",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Diagnostic Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Local File Ingestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local File Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Groq Whisper Transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Whisper Transcription": {
+      "main": [
+        [
+          {
+            "node": "AI Diagnostic Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Diagnostic Engine": {
+      "main": [
+        [
+          {
+            "node": "JSON Sanitizer & Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Sanitizer & Parser": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Exporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "16b7476e-7be2-414e-97de-eedb7a922d8a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "28b19ff7bbf842f815ff641dba5eff24c368dd191ca46783d87d6f2ab906292e"
+  },
+  "id": "dehAuMUSubKP4zup",
+  "tags": []
+}
