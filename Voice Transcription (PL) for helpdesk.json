@@ -168,7 +168,7 @@
           "value": "GOOGLE_SHEET_ID",
           "mode": "list",
           "cachedResultName": "Rejestr awarii",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZquPFCc0Gxekzcxr2j93ilGX2aek95F005vAuqfcD3c/edit?usp=drivesdk"
+          "cachedResultUrl": ""
         },
         "sheetName": {
           "__rl": true,
