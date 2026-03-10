@@ -16,7 +16,7 @@
       "name": "Ollama",
       "credentials": {
         "ollamaApi": {
-          "id": "Vzj8IwnhprGOTV37",
+          "id": "",
           "name": "Ollama account"
         }
       }
@@ -82,7 +82,7 @@
     },
     {
       "parameters": {
-        "filePath": "C:\\Users\\agadz\\.n8n-files\\[Agata Desecka]_7413-11696000085_20260216162458(10304).wav"
+        "filePath": "C:\\(...).wav"
       },
       "type": "n8n-nodes-base.readBinaryFile",
       "typeVersion": 1,
@@ -126,7 +126,7 @@
       "name": "Groq Whisper Transcription",
       "credentials": {
         "groqApi": {
-          "id": "AcPB5SRtZ1dvxDYa",
+          "id": "",
           "name": "Groq account"
         }
       }
@@ -134,7 +134,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Jesteś asystentem Agaty. Przetwórz transkrypcję na JSON.\n\nStruktura:\n{\n  \"nr_sklepu\": \"\",\n  \"urzadzenie\": \"\",\n  \"problem\": \"\",\n  \"status\": \"\",\n  \"notatka\": \"\"\n}\n\nTRANSKRYPCJA:\n{{ $json.text }}\n\nZwróć TYLKO czysty JSON.",
+        "text": "=Jesteś asystentem. Przetwórz transkrypcję na JSON.\n\nStruktura:\n{\n  \"nr_sklepu\": \"\",\n  \"urzadzenie\": \"\",\n  \"problem\": \"\",\n  \"status\": \"\",\n  \"notatka\": \"\"\n}\n\nTRANSKRYPCJA:\n{{ $json.text }}\n\nZwróć TYLKO czysty JSON.",
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
@@ -165,7 +165,7 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1ZquPFCc0Gxekzcxr2j93ilGX2aek95F005vAuqfcD3c",
+          "value": "GOOGLE_SHEET_ID",
           "mode": "list",
           "cachedResultName": "Rejestr awarii",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZquPFCc0Gxekzcxr2j93ilGX2aek95F005vAuqfcD3c/edit?usp=drivesdk"
@@ -252,7 +252,7 @@
       "name": "Google Sheets Exporter",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "XxxZMRfHWuMOLNzH",
+          "id": "",
           "name": "Google Sheets account"
         }
       }
@@ -350,7 +350,7 @@
   "versionId": "16b7476e-7be2-414e-97de-eedb7a922d8a",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "28b19ff7bbf842f815ff641dba5eff24c368dd191ca46783d87d6f2ab906292e"
+    "instanceId": ""
   },
   "id": "dehAuMUSubKP4zup",
   "tags": []
